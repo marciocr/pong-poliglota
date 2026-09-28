@@ -1,0 +1,19 @@
+# C++
+cpp/build/
+
+# Rust
+rust/target/
+
+# Go
+go/pong
+
+# D
+dlang/.dub/
+dlang/pong
+
+# Pascal
+pascal/build/
+
+# Python
+__pycache__/
+.venv/

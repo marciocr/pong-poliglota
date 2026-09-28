@@ -1,0 +1,11 @@
+{
+	"name": "pong",
+	"description": "Pong em D com SDL2 (bindbc-sdl)",
+	"license": "MIT",
+	"targetType": "executable",
+	"targetName": "pong",
+	"dependencies": {
+		"bindbc-sdl": "~>1.5.3"
+	},
+	"versions": ["SDL_2018"]
+}
