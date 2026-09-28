@@ -1,6 +1,6 @@
 # pong-poliglota
 
-O mesmo Pong implementado em 7 linguagens, todas sobre a **SDL2** (vídeo,
+O mesmo Pong implementado em 10 linguagens, todas sobre a **SDL2** (vídeo,
 teclado e áudio). Assim a arquitetura é comparável entre elas: mesmas
 constantes, mesmas funções (`update`, `bounce`, `render`, `draw_number`,
 `square_wave`) e mesmo loop com física em passo fixo.
@@ -16,6 +16,9 @@ constantes, mesmas funções (`update`, `bounce`, `render`, `draw_number`,
 | Object Pascal | [`pascal/`](pascal/) | unit própria `sdl2mini.pas` (`external`)      | FPC via `build.sh`       | `./build/pong`             |
 | Perl          | [`perl/`](perl/)     | FFI::Platypus direto na `libSDL2`             | `cpanfile`               | `./pong.pl`                |
 | Python        | [`python/`](python/) | PySDL2 (ctypes, API de baixo nível)           | `requirements.txt`       | `./pong.py`                |
+| Lua (LuaJIT)  | [`lua/`](lua/)       | FFI do LuaJIT direto na `libSDL2`             | nenhum (só `luajit`)     | `./pong.lua`               |
+| Java 25       | [`java/`](java/)     | API FFM (`java.lang.foreign`)                 | Maven (`pom.xml`)        | `java -jar target/pong.jar`|
+| C# (.NET 10)  | [`csharp/`](csharp/) | P/Invoke com `[LibraryImport]`                | `dotnet` (`.csproj`)     | `dotnet run -c Release`    |
 
 Cada pasta tem um `README.md` com as dependências e os comandos exatos de
 build e execução.
@@ -49,7 +52,7 @@ Tudo está nos repositórios padrão do Fedora; não é preciso RPM Fusion nem
 COPR.
 
 ```bash
-sudo dnf install gcc-c++ cmake sdl2-compat-devel rust cargo golang ldc dub fpc perl perl-FFI-Platypus perl-FFI-CheckLib python3 python3-pysdl2
+sudo dnf install gcc-c++ cmake sdl2-compat-devel rust cargo golang ldc dub fpc perl perl-FFI-Platypus perl-FFI-CheckLib python3 python3-pysdl2 luajit java-25-openjdk-devel maven dotnet-sdk-10.0
 ```
 
 No Fedora 42+ a SDL2 é fornecida pelo `sdl2-compat` (a API SDL2 implementada
