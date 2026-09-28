@@ -5,6 +5,8 @@ teclado e áudio). Assim a arquitetura é comparável entre elas: mesmas
 constantes, mesmas funções (`update`, `bounce`, `render`, `draw_number`,
 `square_wave`) e mesmo loop com física em passo fixo.
 
+![Pong rodando: placar 3 x 12, rede tracejada, raquetes e bola brancas sobre fundo preto](docs/screenshot.png)
+
 | Linguagem     | Pasta                | Binding SDL2                                  | Build                    | Executar                   |
 |---------------|----------------------|-----------------------------------------------|--------------------------|----------------------------|
 | C++17         | [`cpp/`](cpp/)       | headers C oficiais                            | CMake                    | `./build/pong`             |
