@@ -2,6 +2,10 @@
 program pong;
 
 {$mode objfpc}{$H+}
+{ Sem isto, o FPC 3.2+ dá a cada constante real o menor tipo que representa
+  seus literais: STEP = 1.0 / 120.0 seria calculado em Single (32 bits) e a
+  física divergiria das outras linguagens, que usam Double. }
+{$MINFPCONSTPREC 64}
 
 uses
   Math, SysUtils, sdl2mini;
