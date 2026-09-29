@@ -1,0 +1,1 @@
+left_y=156.6667 right_y=196.6667 bx=315.0000 by=235.0000 vx=0.0000 vy=0.0000 speed=300.0000 score=0-1 serve_timer=0.6667

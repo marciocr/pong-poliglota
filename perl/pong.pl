@@ -35,7 +35,6 @@ use constant {
     SDL_SCANCODE_DOWN => 81, SDL_SCANCODE_UP => 82,
     AUDIO_S16LSB => 0x8010,
 };
-use constant MAX_ANGLE => PI / 4;
 
 # Fonte 3x5 para os dígitos do placar.
 my @DIGITS = qw(
@@ -119,9 +118,14 @@ sub bounce {
     my ($dir, $paddle_y) = @_;
     $g{speed} = min($g{speed} * SPEEDUP, BALL_MAX);
     my $rel = (($g{by} + BALL / 2) - ($paddle_y + PADDLE_H / 2)) / (PADDLE_H / 2);
-    my $a = clamp($rel, -1, 1) * MAX_ANGLE;
-    $g{vx} = $dir * $g{speed} * cos($a);
-    $g{vy} = $g{speed} * sin($a);
+    # Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+    # raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+    # diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+    # essa diferença cresce até separar as versões.
+    my $t = clamp($rel, -1, 1);
+    my $len = sqrt(1 + $t * $t);
+    $g{vx} = $dir * $g{speed} / $len;
+    $g{vy} = $g{speed} * $t / $len;
     play('paddle');
 }
 

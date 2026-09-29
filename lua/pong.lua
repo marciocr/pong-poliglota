@@ -47,7 +47,6 @@ local PADDLE_SPEED = 400.0
 local BALL_SPEED = 300.0
 local BALL_MAX = 720.0
 local SPEEDUP = 1.07
-local MAX_ANGLE = math.pi / 4
 local STEP = 1.0 / 120.0
 local SERVE_DELAY = 1.0
 local RATE = 44100
@@ -123,9 +122,14 @@ end
 function Game:bounce(dir, paddle_y)
     self.speed = math.min(self.speed * SPEEDUP, BALL_MAX)
     local rel = ((self.by + BALL / 2) - (paddle_y + PADDLE_H / 2)) / (PADDLE_H / 2)
-    local a = clamp(rel, -1, 1) * MAX_ANGLE
-    self.vx = dir * self.speed * math.cos(a)
-    self.vy = self.speed * math.sin(a)
+    -- Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+    -- raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+    -- diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+    -- essa diferença cresce até separar as versões.
+    local t = clamp(rel, -1, 1)
+    local len = math.sqrt(1 + t * t)
+    self.vx = dir * self.speed / len
+    self.vy = self.speed * t / len
     self:play(self.snd_paddle)
 end
 
@@ -270,4 +274,8 @@ local function main()
     return 0
 end
 
+-- Permite carregar o arquivo como módulo (testes) sem abrir a janela.
+if ... == "pong" then
+    return { Game = Game, STEP = STEP }
+end
 os.exit(main())

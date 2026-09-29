@@ -15,7 +15,6 @@ PADDLE_SPEED = 400.0
 BALL_SPEED = 300.0
 BALL_MAX = 720.0
 SPEEDUP = 1.07
-MAX_ANGLE = math.pi / 4
 STEP = 1.0 / 120.0
 SERVE_DELAY = 1.0
 RATE = 44100
@@ -80,9 +79,14 @@ class Game:
     def bounce(self, direction, paddle_y):
         self.speed = min(self.speed * SPEEDUP, BALL_MAX)
         rel = ((self.by + BALL / 2) - (paddle_y + PADDLE_H / 2)) / (PADDLE_H / 2)
-        a = clamp(rel, -1.0, 1.0) * MAX_ANGLE
-        self.vx = direction * self.speed * math.cos(a)
-        self.vy = self.speed * math.sin(a)
+        # Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+        # raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+        # diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+        # essa diferença cresce até separar as versões.
+        t = clamp(rel, -1.0, 1.0)
+        length = math.sqrt(1 + t * t)
+        self.vx = direction * self.speed / length
+        self.vy = self.speed * t / length
         self.play(self.snd_paddle)
 
     def update(self, keys, dt):

@@ -4,7 +4,7 @@ module app;
 import bindbc.sdl;
 import std.algorithm : clamp, min;
 import std.conv : to;
-import std.math : abs, cos, sin, PI;
+import std.math : abs, cos, sin, sqrt, PI;
 import std.random : uniform;
 import std.stdio : stderr;
 
@@ -15,7 +15,6 @@ enum double PADDLE_SPEED = 400.0;
 enum double BALL_SPEED = 300.0;
 enum double BALL_MAX = 720.0;
 enum double SPEEDUP = 1.07;
-enum double MAX_ANGLE = PI / 4;
 enum double STEP = 1.0 / 120.0;
 enum double SERVE_DELAY = 1.0;
 enum RATE = 44_100;
@@ -74,9 +73,14 @@ struct Game
     {
         speed = min(speed * SPEEDUP, BALL_MAX);
         const rel = ((by + BALL / 2.0) - (paddleY + PADDLE_H / 2.0)) / (PADDLE_H / 2.0);
-        const a = clamp(rel, -1.0, 1.0) * MAX_ANGLE;
-        vx = dir * speed * cos(a);
-        vy = speed * sin(a);
+        // Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+        // raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+        // diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+        // essa diferença cresce até separar as versões.
+        const t = clamp(rel, -1.0, 1.0);
+        const len = sqrt(1 + t * t);
+        vx = dir * speed / len;
+        vy = speed * t / len;
         play(sndPaddle);
     }
 

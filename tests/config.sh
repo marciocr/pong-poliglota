@@ -1,0 +1,2 @@
+GAME=pong
+CLASS=Pong

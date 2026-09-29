@@ -24,7 +24,6 @@ const (
 	BallSpeed    = 300.0
 	BallMax      = 720.0
 	Speedup      = 1.07
-	MaxAngle     = math.Pi / 4
 	Step         = 1.0 / 120.0
 	ServeDelay   = 1.0
 	Rate         = 44100
@@ -89,9 +88,14 @@ func (g *Game) launch() {
 func (g *Game) bounce(dir, paddleY float64) {
 	g.speed = math.Min(g.speed*Speedup, BallMax)
 	rel := ((g.by + Ball/2.0) - (paddleY + PaddleH/2.0)) / (PaddleH / 2.0)
-	a := math.Max(-1, math.Min(1, rel)) * MaxAngle
-	g.vx = dir * g.speed * math.Cos(a)
-	g.vy = g.speed * math.Sin(a)
+	// Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+	// raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+	// diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+	// essa diferença cresce até separar as versões.
+	t := math.Max(-1, math.Min(1, rel))
+	l := math.Sqrt(1 + t*t)
+	g.vx = dir * g.speed / l
+	g.vy = g.speed * t / l
 	g.play(g.sndPaddle)
 }
 

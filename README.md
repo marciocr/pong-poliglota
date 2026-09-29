@@ -1,5 +1,7 @@
 # pong-poliglota
 
+[![testes](https://github.com/marciocr/pong-poliglota/actions/workflows/test.yml/badge.svg)](https://github.com/marciocr/pong-poliglota/actions/workflows/test.yml)
+
 O mesmo Pong implementado em 10 linguagens, todas sobre a **SDL2** (vídeo,
 teclado e áudio). Assim a arquitetura é comparável entre elas: mesmas
 constantes, mesmas funções (`update`, `bounce`, `render`, `draw_number`,
@@ -45,6 +47,18 @@ build e execução.
   | raquete      | 460 Hz     | 50 ms   |
   | parede       | 230 Hz     | 50 ms   |
   | ponto        | 490 Hz     | 250 ms  |
+
+## Testes
+
+```bash
+make build   # compila as 10 versões, cada uma com o seu build system
+make test    # equivalência entre as 10 versões, sem abrir janela
+```
+
+O teste aplica roteiros de teclas à lógica **real** de cada versão e exige que o
+estado final seja idêntico, byte a byte, ao de [`tests/expected/`](tests/expected/).
+O CI do GitHub Actions roda isso para cada linguagem a cada push. Detalhes em
+[`tests/README.md`](tests/README.md).
 
 ## Dependências de sistema (Fedora)
 

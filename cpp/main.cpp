@@ -17,7 +17,6 @@ constexpr double PADDLE_SPEED = 400.0;  // px/s
 constexpr double BALL_SPEED = 300.0;    // px/s inicial
 constexpr double BALL_MAX = 720.0;
 constexpr double SPEEDUP = 1.07;        // a cada rebatida
-constexpr double MAX_ANGLE = M_PI / 4;  // desvio máximo na borda da raquete
 constexpr double STEP = 1.0 / 120.0;    // passo fixo da física
 constexpr double SERVE_DELAY = 1.0;     // s de pausa antes de sacar
 constexpr int RATE = 44100;
@@ -74,9 +73,14 @@ struct Game {
     void bounce(int dir, double paddle_y) {
         speed = std::min(speed * SPEEDUP, BALL_MAX);
         double rel = ((by + BALL / 2.0) - (paddle_y + PADDLE_H / 2.0)) / (PADDLE_H / 2.0);
-        double a = std::clamp(rel, -1.0, 1.0) * MAX_ANGLE;
-        vx = dir * speed * std::cos(a);
-        vy = speed * std::sin(a);
+        // Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+        // raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+        // diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+        // essa diferença cresce até separar as versões.
+        const double t = std::clamp(rel, -1.0, 1.0);
+        const double len = std::sqrt(1 + t * t);
+        vx = dir * speed / len;
+        vy = speed * t / len;
         play(snd_paddle);
     }
 

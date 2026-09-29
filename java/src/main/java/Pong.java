@@ -15,7 +15,6 @@ public final class Pong {
     static final double BALL_SPEED = 300.0;
     static final double BALL_MAX = 720.0;
     static final double SPEEDUP = 1.07;
-    static final double MAX_ANGLE = Math.PI / 4;
     static final double STEP = 1.0 / 120.0;
     static final double SERVE_DELAY = 1.0;
     static final int RATE = 44100;
@@ -79,9 +78,14 @@ public final class Pong {
         void bounce(double dir, double paddleY) {
             speed = Math.min(speed * SPEEDUP, BALL_MAX);
             double rel = ((by + BALL / 2.0) - (paddleY + PADDLE_H / 2.0)) / (PADDLE_H / 2.0);
-            double a = clamp(rel, -1, 1) * MAX_ANGLE;
-            vx = dir * speed * Math.cos(a);
-            vy = speed * Math.sin(a);
+            // Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+            // raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+            // diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+            // essa diferença cresce até separar as versões.
+            double t = clamp(rel, -1, 1);
+            double len = Math.sqrt(1 + t * t);
+            vx = dir * speed / len;
+            vy = speed * t / len;
             play(sndPaddle);
         }
 

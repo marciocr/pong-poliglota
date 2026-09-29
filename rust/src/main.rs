@@ -19,7 +19,6 @@ const PADDLE_SPEED: f64 = 400.0;
 const BALL_SPEED: f64 = 300.0;
 const BALL_MAX: f64 = 720.0;
 const SPEEDUP: f64 = 1.07;
-const MAX_ANGLE: f64 = PI / 4.0;
 const STEP: f64 = 1.0 / 120.0;
 const SERVE_DELAY: f64 = 1.0;
 const RATE: i32 = 44100;
@@ -105,9 +104,14 @@ impl Game {
         self.speed = (self.speed * SPEEDUP).min(BALL_MAX);
         let rel = ((self.by + BALL as f64 / 2.0) - (paddle_y + PADDLE_H as f64 / 2.0))
             / (PADDLE_H as f64 / 2.0);
-        let a = rel.clamp(-1.0, 1.0) * MAX_ANGLE;
-        self.vx = dir * self.speed * a.cos();
-        self.vy = self.speed * a.sin();
+        // Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+        // raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+        // diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+        // essa diferença cresce até separar as versões.
+        let t = rel.clamp(-1.0, 1.0);
+        let len = (1.0 + t * t).sqrt();
+        self.vx = dir * self.speed / len;
+        self.vy = self.speed * t / len;
         snd.play(&snd.paddle);
     }
 

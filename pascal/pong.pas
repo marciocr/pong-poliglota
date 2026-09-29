@@ -2,9 +2,9 @@
 program pong;
 
 {$mode objfpc}{$H+}
-{ Sem isto, o FPC 3.2+ dá a cada constante real o menor tipo que representa
-  seus literais: STEP = 1.0 / 120.0 seria calculado em Single (32 bits) e a
-  física divergiria das outras linguagens, que usam Double. }
+{ O FPC 3.2+ calcula a expressão de uma constante real no menor tipo que
+  representa seus literais: 1.0 / 120.0 sairia em Single (32 bits). Esta diretiva
+  faz as constantes serem avaliadas, no mínimo, em precisão dupla. }
 {$MINFPCONSTPREC 64}
 
 uses
@@ -17,13 +17,15 @@ const
   PADDLE_H = 60;
   PADDLE_MARGIN = 20;
   BALL = 10;
-  PADDLE_SPEED = 400.0;
-  BALL_SPEED = 300.0;
-  BALL_MAX = 720.0;
-  SPEEDUP = 1.07;
-  MAX_ANGLE = Pi / 4;
-  STEP = 1.0 / 120.0;
-  SERVE_DELAY = 1.0;
+  { Constantes reais como Double tipado. Uma constante sem tipo (X = 1.07) é
+    Extended: ao multiplicá-la por um Double o FPC faz a conta em x87, com 80
+    bits, e o resultado difere no último bit das outras linguagens. }
+  PADDLE_SPEED: Double = 400.0;
+  BALL_SPEED: Double = 300.0;
+  BALL_MAX: Double = 720.0;
+  SPEEDUP: Double = 1.07;
+  STEP: Double = 1.0 / 120.0;
+  SERVE_DELAY: Double = 1.0;
   RATE = 44100;
 
   { Fonte 3x5 para os dígitos do placar. }
@@ -107,13 +109,18 @@ end;
 
 procedure TGame.Bounce(Dir, PaddleY: Double);
 var
-  Rel, A: Double;
+  Rel, T, Len: Double;
 begin
   Speed := Min(Speed * SPEEDUP, BALL_MAX);
   Rel := ((BY + BALL / 2) - (PaddleY + PADDLE_H / 2)) / (PADDLE_H / 2);
-  A := EnsureRange(Rel, -1.0, 1.0) * MAX_ANGLE;
-  VX := Dir * Speed * Cos(A);
-  VY := Speed * Sin(A);
+  { Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+   raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+   diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+   essa diferença cresce até separar as versões. }
+  T := EnsureRange(Rel, -1.0, 1.0);
+  Len := Sqrt(1 + T * T);
+  VX := Dir * Speed / Len;
+  VY := Speed * T / Len;
   Play(SndPaddle);
 end;
 

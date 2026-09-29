@@ -10,7 +10,6 @@ unsafe class Pong
     const double BALL_SPEED = 300.0;
     const double BALL_MAX = 720.0;
     const double SPEEDUP = 1.07;
-    const double MAX_ANGLE = Math.PI / 4;
     const double STEP = 1.0 / 120.0;
     const double SERVE_DELAY = 1.0;
     const int RATE = 44100;
@@ -73,9 +72,14 @@ unsafe class Pong
         {
             Speed = Math.Min(Speed * SPEEDUP, BALL_MAX);
             double rel = ((By + BALL / 2.0) - (paddleY + PADDLE_H / 2.0)) / (PADDLE_H / 2.0);
-            double a = Math.Clamp(rel, -1, 1) * MAX_ANGLE;
-            Vx = dir * Speed * Math.Cos(a);
-            Vy = Speed * Math.Sin(a);
+            // Direção (1, t) normalizada, com t = tan do ângulo de saída (até 45° na borda da
+            // raquete). Usa só sqrt, que o IEEE 754 exige arredondado corretamente: sin/cos
+            // diferem no último bit entre as bibliotecas de cada linguagem, e num rali longo
+            // essa diferença cresce até separar as versões.
+            double t = Math.Clamp(rel, -1, 1);
+            double len = Math.Sqrt(1 + t * t);
+            Vx = dir * Speed / len;
+            Vy = Speed * t / len;
             Play(sndPaddle);
         }
 
